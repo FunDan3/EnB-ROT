@@ -14,14 +14,18 @@ def main():
 	parser.add_argument("input_file", type = argparse.FileType("r"))
 	parser.add_argument("output_file", type = argparse.FileType("w"))
 	parser.add_argument("-s", "--shift", type = int)
-	parser.add_argument("-a", "--alphabet")
+	parser.add_argument("-l", "--language")
 	args = parser.parse_args()
-	if args.alphabet == None:
-		args.alphabet = "english"
-	args.alphabet = args.alphabet.lower()
-	alphabet_path = os.path.dirname(script_dir)+"/alphabets/"+args.alphabet
+	if args.language == None:
+		args.language = "english"
+		print(f"No language specified. Default selected: {args.language}")
+	if args.shift == None:
+		args.shift = 13
+		print(f"No shift specified. Default selected: {args.shift}")
+	args.language = args.language.lower()
+	alphabet_path = os.path.dirname(script_dir)+"/alphabets/"+args.language
 	if not os.path.exists(alphabet_path):
-		print("No such alphabet '{args.alphabet}'. At path {alphabet_path}")
+		print("No such alphabet '{args.language}'. At path {alphabet_path}")
 		return
 	with open(alphabet_path) as f:
 		alphabet = f.read().replace("\n", "")
@@ -37,10 +41,13 @@ def main():
 		input_chunk = args.input_file.read(buffer_size)
 		output_chunk = []
 		for input_character in input_chunk:
-			if input_character not in alphabet:
+			if input_character.lower() not in alphabet:
 				output_chunk.append(input_character)
 				continue
-			output_chunk.append(alphabet[normalize_shift(alphabet.index(input_character)+shift, alphabet)])
+			character = alphabet[normalize_shift(alphabet.index(input_character.lower())+shift, alphabet)]
+			if input_character.isupper():
+				character = character.upper()
+			output_chunk.append(character)
 		args.output_file.write("".join(output_chunk))
 	print("Encryption compleate.")
 if __name__ == "__main__":
